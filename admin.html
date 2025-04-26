@@ -5,10 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ProClan Admin Dashboard</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="admin.css">
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
 </head>
 
 <body>
@@ -22,14 +21,15 @@
         <div class="sidebar">
             <div class="logo">AutoAdmin</div>
             <ul class="nav-menu">
-                <li><a href="#" class="active"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
-                <li><a href="#"><i class="fas fa-car"></i> <span>Cars</span></a></li>
-                <li><a href="#"><i class="fas fa-plus-circle"></i> <span>Add New Car</span></a></li>
-                <li><a href="#"><i class="fas fa-tags"></i> <span>Categories</span></a></li>
-                <li><a href="#"><i class="fas fa-users"></i> <span>Customers</span></a></li>
-                <li><a href="#"><i class="fas fa-clipboard-list"></i> <span>Orders</span></a></li>
-                <li><a href="#"><i class="fas fa-cog"></i> <span>Settings</span></a></li>
-                <li><a href="#"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
+                <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+                <li><a href="cars.html"><i class="fas fa-car"></i> <span>Cars</span></a></li>
+                <li><a href="add-car.html" class="active"><i class="fas fa-plus-circle"></i> <span>Add New
+                            Car</span></a></li>
+                <li><a href="categories.html"><i class="fas fa-tags"></i> <span>Categories</span></a></li>
+                <li><a href="customers.html"><i class="fas fa-users"></i> <span>Customers</span></a></li>
+                <li><a href="orders.html"><i class="fas fa-clipboard-list"></i> <span>Orders</span></a></li>
+                <li><a href="settings.html"><i class="fas fa-cog"></i> <span>Settings</span></a></li>
+                <li><a href="Login.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
             </ul>
         </div>
 
@@ -38,41 +38,44 @@
             <div class="header">
                 <h1 class="page-title">Add New Car</h1>
                 <div class="user-info">
-                    <img src="/api/placeholder/40/40" alt="Admin User">
+                    <img src="#" alt="Admin User" id="userAvatar">
                     <div>
-                        <div>John Admin</div>
-                        <small>Administrator</small>
+                        <div id="userName">John Admin</div>
+                        <small id="userRole">Administrator</small>
                     </div>
                 </div>
             </div>
+
+            <!-- Status message area -->
+            <div id="statusMessageArea"></div>
 
             <div class="dashboard-stats">
                 <div class="stat-card">
                     <i class="fas fa-car"></i>
                     <div>
                         <div class="stat-title">Total Cars</div>
-                        <div class="stat-value">124</div>
+                        <div class="stat-value" id="totalCars">Loading...</div>
                     </div>
                 </div>
                 <div class="stat-card">
                     <i class="fas fa-eye"></i>
                     <div>
                         <div class="stat-title">Total Views</div>
-                        <div class="stat-value">8,567</div>
+                        <div class="stat-value" id="totalViews">Loading...</div>
                     </div>
                 </div>
                 <div class="stat-card">
                     <i class="fas fa-shopping-cart"></i>
                     <div>
                         <div class="stat-title">Pending Orders</div>
-                        <div class="stat-value">12</div>
+                        <div class="stat-value" id="pendingOrders">Loading...</div>
                     </div>
                 </div>
                 <div class="stat-card">
                     <i class="fas fa-dollar-sign"></i>
                     <div>
                         <div class="stat-title">Total Revenue</div>
-                        <div class="stat-value">$254,120</div>
+                        <div class="stat-value" id="totalRevenue">Loading...</div>
                     </div>
                 </div>
             </div>
@@ -84,23 +87,18 @@
                 </div>
 
                 <form id="addCarForm">
-                    <!-- Hidden CSRF Token -->
-                    <input type="hidden" name="csrf_token" value="your-csrf-token-here">
+                    <!-- CSRF Token - Will be dynamically set -->
+                    <input type="hidden" name="csrf_token" id="csrfToken">
 
                     <div class="form-grid">
                         <div class="form-group">
                             <label class="form-label" for="carMake">Make</label>
-                            <select class="form-control" id="carMake" name="carMake" required>
+                            <!-- <select class="form-control" id="carMake" name="carMake" required>
                                 <option value="">Select Make</option>
-                                <option value="Toyota">Toyota</option>
-                                <option value="Honda">Honda</option>
-                                <option value="BMW">BMW</option>
-                                <option value="Mercedes">Mercedes</option>
-                                <option value="Audi">Audi</option>
-                                <option value="Ford">Ford</option>
-                                <option value="Chevrolet">Chevrolet</option>
-                                <option value="Other">Other</option>
-                            </select>
+                            </select> -->
+                            <input type="text" class="form-control" id="carMake" name="carMake"
+                                placeholder="Enter car make" required />
+
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="carModel">Model</label>
@@ -113,7 +111,7 @@
                         <div class="form-group">
                             <label class="form-label" for="carYear">Year</label>
                             <input type="number" class="form-control" id="carYear" name="carYear"
-                                placeholder="e.g. 2023" min="1900" max="2030" required>
+                                placeholder="e.g. 2025" min="1900" max="2030" required>
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="carPrice">Price ($)</label>
@@ -130,27 +128,24 @@
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="carFuelType">Fuel Type</label>
-                            <select class="form-control" id="carFuelType" name="carFuelType">
+                            <!-- <select class="form-control" id="carFuelType" name="carFuelType">
                                 <option value="">Select Fuel Type</option>
-                                <option value="Gasoline">Gasoline</option>
-                                <option value="Diesel">Diesel</option>
-                                <option value="Electric">Electric</option>
-                                <option value="Hybrid">Hybrid</option>
-                                <option value="Plug-in Hybrid">Plug-in Hybrid</option>
-                            </select>
+                                 Will be populated dynamically 
+                            </select> -->
+                            <input type="text" class="form-control" id="carFuelType" name="carFuelType"
+                                placeholder="e.g. Petrol, Diesel, Electric">
                         </div>
                     </div>
 
                     <div class="form-grid">
                         <div class="form-group">
                             <label class="form-label" for="carTransmission">Transmission</label>
-                            <select class="form-control" id="carTransmission" name="carTransmission">
+                            <!-- <select class="form-control" id="carTransmission" name="carTransmission">
                                 <option value="">Select Transmission</option>
-                                <option value="Automatic">Automatic</option>
-                                <option value="Manual">Manual</option>
-                                <option value="CVT">CVT</option>
-                                <option value="Semi-Automatic">Semi-Automatic</option>
-                            </select>
+                                 Will be populated dynamically 
+                            </select> -->
+                            <input type="text" class="form-control" id="carTransmission" name="carTransmission"
+                                placeholder="e.g. Automatic, Manual">
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="carColor">Color</label>
@@ -162,25 +157,21 @@
                     <div class="form-grid">
                         <div class="form-group">
                             <label class="form-label" for="carBodyType">Body Type</label>
-                            <select class="form-control" id="carBodyType" name="carBodyType">
+                            <!-- <select class="form-control" id="carBodyType" name="carBodyType">
                                 <option value="">Select Body Type</option>
-                                <option value="Sedan">Sedan</option>
-                                <option value="SUV">SUV</option>
-                                <option value="Hatchback">Hatchback</option>
-                                <option value="Truck">Truck</option>
-                                <option value="Coupe">Coupe</option>
-                                <option value="Convertible">Convertible</option>
-                                <option value="Van">Van</option>
-                            </select>
+                                 Will be populated dynamically 
+                            </select> -->
+                            <input type="text" class="form-control" id="carBodyType" name="carBodyType"
+                                placeholder="e.g. Sedan, SUV, Hatchback">
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="carStatus">Status</label>
-                            <select class="form-control" id="carStatus" name="carStatus">
-                                <option value="Available">Available</option>
-                                <option value="Sold">Sold</option>
-                                <option value="Reserved">Reserved</option>
-                                <option value="Maintenance">Maintenance</option>
-                            </select>
+                            <!-- <select class="form-control" id="carStatus" name="carStatus">
+                                <option value="">Select Status</option>
+                                 Will be populated dynamically -->
+                            </select> 
+                            <input type="text" class="form-control" id="carStatus" name="carStatus"
+                                placeholder="e.g. Available, Sold, Pending">
                         </div>
                     </div>
 
@@ -193,89 +184,35 @@
 
                     <div class="form-group">
                         <label class="form-label">Features</label>
-                        <div
+                        <div id="featuresContainer"
                             style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px;">
-                            <div class="form-check">
-                                <input type="checkbox" id="feature1" name="features[]" value="Bluetooth"
-                                    class="form-check-input">
-                                <label for="feature1">Bluetooth</label>
-                            </div>
-                            <div class="form-check">
-                                <input type="checkbox" id="feature2" name="features[]" value="Navigation System"
-                                    class="form-check-input">
-                                <label for="feature2">Navigation System</label>
-                            </div>
-                            <div class="form-check">
-                                <input type="checkbox" id="feature3" name="features[]" value="Backup Camera"
-                                    class="form-check-input">
-                                <label for="feature3">Backup Camera</label>
-                            </div>
-                            <div class="form-check">
-                                <input type="checkbox" id="feature4" name="features[]" value="Sunroof"
-                                    class="form-check-input">
-                                <label for="feature4">Sunroof</label>
-                            </div>
-                            <div class="form-check">
-                                <input type="checkbox" id="feature5" name="features[]" value="Leather Seats"
-                                    class="form-check-input">
-                                <label for="feature5">Leather Seats</label>
-                            </div>
-                            <div class="form-check">
-                                <input type="checkbox" id="feature6" name="features[]" value="Heated Seats"
-                                    class="form-check-input">
-                                <label for="feature6">Heated Seats</label>
-                            </div>
-                            <div class="form-check">
-                                <input type="checkbox" id="feature7" name="features[]" value="Parking Sensors"
-                                    class="form-check-input">
-                                <label for="feature7">Parking Sensors</label>
-                            </div>
-                            <div class="form-check">
-                                <input type="checkbox" id="feature8" name="features[]" value="Apple CarPlay"
-                                    class="form-check-input">
-                                <label for="feature8">Apple CarPlay</label>
-                            </div>
-                            <div class="form-check">
-                                <input type="checkbox" id="feature9" name="features[]" value="Android Auto"
-                                    class="form-check-input">
-                                <label for="feature9">Android Auto</label>
-                            </div>
-                            <div class="form-check">
-                                <input type="checkbox" id="feature10" name="features[]" value="Keyless Entry"
-                                    class="form-check-input">
-                                <label for="feature10">Keyless Entry</label>
-                            </div>
-                            <div class="form-check">
-                                <input type="checkbox" id="feature11" name="features[]" value="Cruise Control"
-                                    class="form-check-input">
-                                <label for="feature11">Cruise Control</label>
-                            </div>
-                            <div class="form-check">
-                                <input type="checkbox" id="feature12" name="features[]" value="Lane Assist"
-                                    class="form-check-input">
-                                <label for="feature12">Lane Assist</label>
-                            </div>
+                            <!-- Will be populated dynamically -->
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label" id="carImagesLabel">Car Images</label>
-                        <span class="form-hint">Upload at least one image of the vehicle. First image will be used as
-                            the main display image.</span>
+                        <span class="form-hint">
+                            Upload at least one image of the vehicle. First image will be used as the main display image.
+                        </span>
+                    
                         <div class="image-preview" id="imagePreview">
                             <div class="preview-box" id="addImageBox">
                                 <span class="add-image">+</span>
                             </div>
                         </div>
+                    
+                        <input type="file" id="imageInput" accept="image/*" multiple style="display: none;">
+                        
                         <div id="imageErrorContainer"></div>
                     </div>
 
                     <div class="form-group" style="margin-top: 30px;">
-                        <button type="submit" class="btn btn-primary" style="min-width: 150px;">Save Car</button>
+                        <button type="submit" class="btn btn-primary" id="addCarForm"style="min-width: 150px;">Save Car</button>
                         <button type="button" id="saveDraftBtn" class="btn btn-warning"
                             style="min-width: 150px; margin-left: 10px;">Save as Draft</button>
-                        <button type="reset" class="btn btn-danger" style="min-width: 150px; margin-left: 10px;">Reset
-                            Form</button>
+                        <button type="reset" id="resetFormBtn" class="btn btn-danger"
+                            style="min-width: 150px; margin-left: 10px;">Reset Form</button>
                     </div>
                 </form>
             </div>
@@ -283,7 +220,7 @@
             <div class="content-section">
                 <div class="section-header">
                     <h2 class="section-title">Recently Added Cars</h2>
-                    <a href="#" class="btn btn-sm btn-primary">View All</a>
+                    <a href="cars.html" class="btn btn-sm btn-primary">View All</a>
                 </div>
                 <div class="table-responsive">
                     <table class="table">
@@ -299,65 +236,9 @@
                             </tr>
                         </thead>
                         <tbody id="recentCarsTable">
+                            <!-- Will be populated dynamically -->
                             <tr>
-                                <td><img src="/api/placeholder/60/60" alt="Car"></td>
-                                <td>Toyota Camry</td>
-                                <td>2023</td>
-                                <td>$28,450</td>
-                                <td><span class="badge badge-success">Available</span></td>
-                                <td>April 5, 2025</td>
-                                <td class="actions">
-                                    <button class="btn btn-sm btn-primary">Edit</button>
-                                    <button class="btn btn-sm btn-danger">Delete</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><img src="/api/placeholder/60/60" alt="Car"></td>
-                                <td>Honda Accord</td>
-                                <td>2022</td>
-                                <td>$24,970</td>
-                                <td><span class="badge badge-warning">Reserved</span></td>
-                                <td>April 3, 2025</td>
-                                <td class="actions">
-                                    <button class="btn btn-sm btn-primary">Edit</button>
-                                    <button class="btn btn-sm btn-danger">Delete</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><img src="/api/placeholder/60/60" alt="Car"></td>
-                                <td>Ford Mustang</td>
-                                <td>2023</td>
-                                <td>$38,150</td>
-                                <td><span class="badge badge-success">Available</span></td>
-                                <td>April 2, 2025</td>
-                                <td class="actions">
-                                    <button class="btn btn-sm btn-primary">Edit</button>
-                                    <button class="btn btn-sm btn-danger">Delete</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><img src="/api/placeholder/60/60" alt="Car"></td>
-                                <td>BMW X5</td>
-                                <td>2024</td>
-                                <td>$62,500</td>
-                                <td><span class="badge badge-success">Available</span></td>
-                                <td>April 1, 2025</td>
-                                <td class="actions">
-                                    <button class="btn btn-sm btn-primary">Edit</button>
-                                    <button class="btn btn-sm btn-danger">Delete</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><img src="/api/placeholder/60/60" alt="Car"></td>
-                                <td>Tesla Model 3</td>
-                                <td>2024</td>
-                                <td>$45,990</td>
-                                <td><span class="badge badge-danger">Sold</span></td>
-                                <td>March 30, 2025</td>
-                                <td class="actions">
-                                    <button class="btn btn-sm btn-primary">Edit</button>
-                                    <button class="btn btn-sm btn-danger">Delete</button>
-                                </td>
+                                <td colspan="7" class="text-center">Loading recent cars...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -369,9 +250,7 @@
                     <h2 class="section-title">Monthly Sales Overview</h2>
                     <div class="chart-filters">
                         <select id="yearFilter" class="form-control form-control-sm">
-                            <option value="2025">2025</option>
-                            <option value="2024">2024</option>
-                            <option value="2023">2023</option>
+                            <!-- Will be populated dynamically -->
                         </select>
                     </div>
                 </div>
@@ -389,255 +268,7 @@
 
     <!-- Hidden file input for image upload -->
     <input type="file" id="fileUpload" style="display: none;" accept="image/*" multiple>
+    <script src="Index.js"></script>
 
     <!-- JavaScript -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chart.js/3.9.1/chart.min.js"></script>
-    <script>
-        // DOM Elements
-        const loaderOverlay = document.getElementById('loaderOverlay');
-        const addCarForm = document.getElementById('addCarForm');
-        const imagePreview = document.getElementById('imagePreview');
-        const addImageBox = document.getElementById('addImageBox');
-        const fileUpload = document.getElementById('fileUpload');
-        const imageErrorContainer = document.getElementById('imageErrorContainer');
-        const saveDraftBtn = document.getElementById('saveDraftBtn');
-
-        // Show loader for 1 second when page loads
-        document.addEventListener('DOMContentLoaded', function () {
-            setTimeout(() => {
-                loaderOverlay.style.opacity = '0';
-                setTimeout(() => {
-                    loaderOverlay.style.display = 'none';
-                }, 300);
-            }, 1000);
-
-            // Initialize Monthly Sales Chart
-            initMonthlySalesChart();
-        });
-
-        // Image Upload Handling
-        addImageBox.addEventListener('click', function () {
-            fileUpload.click();
-        });
-
-        fileUpload.addEventListener('change', function (e) {
-            if (this.files && this.files.length > 0) {
-                for (let i = 0; i < this.files.length; i++) {
-                    if (i >= 5) {
-                        imageErrorContainer.innerHTML = '<div class="alert alert-warning">Maximum 5 images allowed. Some images were not added.</div>';
-                        break;
-                    }
-
-                    const file = this.files[i];
-                    if (!file.type.match('image.*')) {
-                        continue;
-                    }
-
-                    const reader = new FileReader();
-
-                    reader.onload = function (e) {
-                        const previewBox = document.createElement('div');
-                        previewBox.className = 'preview-box image-box';
-                        previewBox.innerHTML = `
-                            <img src="${e.target.result}" alt="Car Preview">
-                            <span class="remove-image">&times;</span>
-                        `;
-
-                        // Insert before the add button
-                        imagePreview.insertBefore(previewBox, addImageBox);
-
-                        // Add remove event listener
-                        previewBox.querySelector('.remove-image').addEventListener('click', function () {
-                            imagePreview.removeChild(previewBox);
-                        });
-                    };
-
-                    reader.readAsDataURL(file);
-                }
-            }
-        });
-
-        // Form Submission
-        addCarForm.addEventListener('submit', function (e) {
-            e.preventDefault();
-
-            // Show loader
-            loaderOverlay.style.display = 'flex';
-            loaderOverlay.style.opacity = '1';
-
-            // Get form data
-            const formData = new FormData(addCarForm);
-
-            // Log form data properly (this shows the actual values)
-            console.log('Form Data:');
-            for (let pair of formData.entries()) {
-                console.log(pair[0] + ': ' + pair[1]);
-            }
-
-            // Replace with your actual server endpoint
-            const serverUrl = 'https://your-server.com/api/submit-car';
-
-            fetch(serverUrl, {
-                method: 'POST',
-                body: formData,
-            })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`Server error: ${response.status}`);
-                    }
-                    return response.json(); // or response.text() if server doesn't return JSON
-                })
-                .then(data => {
-                    console.log('Success:', data);
-                    // You can also show a success message or redirect
-
-                    // Add the new car to the recent cars table
-                    addNewCarToTable(formData);
-
-                    // Show success message
-                    alert('Car added successfully!');
-                })
-                .catch(error => {
-                    console.error('Error submitting form:', error);
-                    // Handle the error (e.g., show error message to user)
-                    loaderOverlay.style.display = 'none'; // Hide loader on error
-                })
-                .finally(() => {
-                    // Hide loader when done (whether success or failure)
-                    loaderOverlay.style.display = 'none';
-
-
-
-                    // Reset form
-                    addCarForm.reset();
-
-                    // Clear image preview
-                    const imagePreviews = document.querySelectorAll('.image-box');
-                    imagePreviews.forEach(box => {
-                        imagePreview.removeChild(box);
-                    });
-
-                    // Hide loader
-                    loaderOverlay.style.opacity = '0';
-                    setTimeout(() => {
-                        loaderOverlay.style.display = 'none';
-                    }, 300);
-                }, 1500);
-        });
-
-        // Save as Draft button
-        saveDraftBtn.addEventListener('click', function () {
-            alert('Car saved as draft.');
-        });
-
-        // Function to add a new car to the recent cars table
-        function addNewCarToTable(formData) {
-            const make = formData.get('carMake');
-            const model = formData.get('carModel');
-            const year = formData.get('carYear');
-            const price = formData.get('carPrice');
-            const status = formData.get('carStatus');
-
-            // Create a new row
-            const row = document.createElement('tr');
-
-            // Get current date
-            const today = new Date();
-            const dateStr = today.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-
-            // Set the row HTML
-            row.innerHTML = `
-                <td><img src="/api/placeholder/60/60" alt="Car"></td>
-                <td>${make} ${model}</td>
-                <td>${year}</td>
-                <td>$${Number(price).toLocaleString('en-US')}</td>
-                <td><span class="badge badge-${status === 'Available' ? 'success' : status === 'Reserved' ? 'warning' : 'danger'}">${status}</span></td>
-                <td>${dateStr}</td>
-                <td class="actions">
-                    <button class="btn btn-sm btn-primary">Edit</button>
-                    <button class="btn btn-sm btn-danger">Delete</button>
-                </td>
-            `;
-
-            // Add the row to the table
-            const recentCarsTable = document.getElementById('recentCarsTable');
-            recentCarsTable.insertBefore(row, recentCarsTable.firstChild);
-
-            // Remove the last row if there are more than 5 rows
-            if (recentCarsTable.children.length > 5) {
-                recentCarsTable.removeChild(recentCarsTable.lastElementChild);
-            }
-        }
-
-        // Function to initialize Monthly Sales Chart
-        function initMonthlySalesChart() {
-            const ctx = document.getElementById('monthlySalesChart').getContext('2d');
-
-            // Sample data
-            const monthlyData = {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-                datasets: [
-                    {
-                        label: 'Sales Count',
-                        data: [4, 6, 8, 10, 12, 15, 18, 16, 14, 12, 10, 9],
-                        backgroundColor: 'rgba(52, 152, 219, 0.2)',
-                        borderColor: 'rgba(52, 152, 219, 1)',
-                        borderWidth: 2,
-                        tension: 0.4
-                    },
-                    {
-                        label: 'Revenue ($1000)',
-                        data: [12, 18, 24, 30, 36, 42, 48, 42, 36, 30, 24, 18],
-                        backgroundColor: 'rgba(46, 204, 113, 0.2)',
-                        borderColor: 'rgba(46, 204, 113, 1)',
-                        borderWidth: 2,
-                        tension: 0.4
-                    }
-                ]
-            };
-
-            // Create chart
-            const salesChart = new Chart(ctx, {
-                type: 'line',
-                data: monthlyData,
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                        },
-                        tooltip: {
-                            mode: 'index',
-                            intersect: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-
-            // Year filter event
-            document.getElementById('yearFilter').addEventListener('change', function () {
-                // In a real application, this would fetch new data based on the year
-                alert(`You selected year: ${this.value}. This would fetch new data in a real app.`);
-            });
-        }
-
-        // Delete confirmation for car actions
-        document.querySelector('.table').addEventListener('click', function (e) {
-            if (e.target.classList.contains('btn-danger')) {
-                if (confirm('Are you sure you want to delete this car?')) {
-                    // In a real app, this would delete the car
-                    const row = e.target.closest('tr');
-                    row.parentNode.removeChild(row);
-                }
-            }
-        });
-    </script>
-</body>
-
-</html>
