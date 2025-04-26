@@ -5,76 +5,125 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Car Details</title>
     <link rel="stylesheet" href="Cars.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <header>
-        <div class="container">
-            <h1>Car Details</h1>
+        <div class="container header-container">
+            <div class="logo">Proclan<span>Motors</span></div>
+        
         </div>
     </header>
     
-    <div class="container">
+    
+    <main class="container">
         <div class="status-banner">
             <span id="statusMessage">Loading...</span>
             <span class="code" id="statusCode"></span>
         </div>
         
-        <div class="car-card">
-            <div class="car-image">
+        <div class="car-listing">
+            <div class="car-gallery">
                 <div class="placeholder" id="imagePlaceholder">🚗</div>
                 <img id="carImage" style="display: none;" alt="Car Image">
             </div>
             
-            <div class="car-details">
-                <div class="car-title">
-                    <h2><span id="carMake">Loading...</span> <span id="carModel">Loading...</span></h2>
-                    <div class="car-price" id="carPrice">Loading...</div>
+            <div class="car-summary">
+                <h1 id="carTitle">
+                    <span id="carMake">Loading...</span> - <span id="carModel">Loading...</span> - 
+                    <span id="carFuel">Loading...</span>
+                </h1>
+                
+                <div class="car-brief">
+                    <span id="carYear">Loading...</span> • 
+                    <span id="carBodyType">Loading...</span> • 
+                    <span id="carDoors">Loading...</span> • 
+                    <span id="carColor">Loading...</span>
                 </div>
                 
-                <div class="details-grid">
-                    <div class="detail-item">
-                        <div class="label">Year</div>
-                        <div class="value" id="carYear">Loading...</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="label">Mileage</div>
-                        <div class="value" id="carMileage">Loading...</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="label">Fuel Type</div>
-                        <div class="value" id="carFuel">Loading...</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="label">Transmission</div>
-                        <div class="value" id="carTransmission">Loading...</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="label">Color</div>
-                        <div class="value" id="carColor">Loading...</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="label">Body Type</div>
-                        <div class="value" id="carBodyType">Loading...</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="label">ID</div>
-                        <div class="value" id="carId">Loading...</div>
-                    </div>
-                </div>
+                <div class="car-price" id="carPrice">Loading...</div>
                 
-                <div class="description">
-                    <h3>Description <span class="badge" id="carStatus">Loading...</span></h3>
-                    <p id="carDescription">Loading...</p>
-                </div>
-                
-                <div class="features">
-                    <h3>Features</h3>
-                    <div id="carFeatures" class="features-placeholder">No features available</div>
+                <div class="car-details-table">
+                    <div class="detail-row">
+                        <div class="detail-label">Make</div>
+                        <div class="detail-value" id="detailMake">Loading...</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Model</div>
+                        <div class="detail-value" id="detailModel">Loading...</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Colour</div>
+                        <div class="detail-value" id="detailColor">Loading...</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Drive Type</div>
+                        <div class="detail-value" id="detailDriveType">Loading...</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Transmission</div>
+                        <div class="detail-value" id="detailTransmission">Loading...</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Condition</div>
+                        <div class="detail-value" id="detailCondition">Loading...</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Year</div>
+                        <div class="detail-value" id="detailYear">Loading...</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Fuel Type</div>
+                        <div class="detail-value" id="detailFuel">Loading...</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Engine Size</div>
+                        <div class="detail-value" id="detailEngine">Loading...</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Mileage</div>
+                        <div class="detail-value" id="detailMileage">Loading...</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Doors</div>
+                        <div class="detail-value" id="detailDoors">Loading...</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Status</div>
+                        <div class="detail-value" id="detailStatus">Loading...</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">VIN</div>
+                        <div class="detail-value" id="carVIN">Loading...</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">ID</div>
+                        <div class="detail-value" id="carId">Loading...</div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+        
+        <section class="description-section">
+            <h2>Description <span class="badge" id="carStatus">Loading...</span></h2>
+            <p id="carDescription">Loading...</p>
+        </section>
+        
+        <section class="features-section">
+            <h2>Features</h2>
+            <div class="features-list" id="carFeatures">
+                <div class="feature-item">Loading features...</div>
+            </div>
+        </section>
+     
+            <div class="contact-info">
+                <div class="online-indicator">Online</div>
+            </div>
+        </section>
+    </main>
     
-    <script src="script.js"></script>
+    <script src="Index.js"></script>
 </body>
 </html>

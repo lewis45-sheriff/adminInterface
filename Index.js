@@ -626,68 +626,169 @@ const CONFIG = {
         window.location.href = `cars.html?carId=${carId}`;
     }
     
-    // Extract carId from the URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const carId = urlParams.get('carId');
-    
-    if (carId) {
-        fetch(`${baseUrl}/get-car/${carId}`)
-            .then(response => response.json())
-            .then(data => {
-                console.log('Car details:', data);
-    
-                const car = data.entity;
-                console.log('Car object:', car);
-    
-                // Populate car details
-                document.getElementById('carMake').textContent = car.make || 'N/A';
-                document.getElementById('carModel').textContent = car.model || 'N/A';
-                document.getElementById('carYear').textContent = car.year || 'N/A';
-                document.getElementById('carPrice').textContent = car.price ? `$${car.price}` : 'N/A';
-                document.getElementById('carMileage').textContent = car.mileage ? `${car.mileage} km` : 'N/A';
-                document.getElementById('carFuel').textContent = car.fuelType || 'N/A';
-                document.getElementById('carTransmission').textContent = car.transmission || 'N/A';
-                document.getElementById('carColor').textContent = car.color || 'N/A';
-                document.getElementById('carBodyType').textContent = car.bodyType || 'N/A';
-                document.getElementById('carId').textContent = car.id || 'N/A';
-                document.getElementById('carStatus').textContent = car.status || 'N/A';
-                document.getElementById('carDescription').textContent = car.description || 'No description available';
-    
-                // Handle features
-                const featuresContainer = document.getElementById('carFeatures');
-                if (car.features && car.features.length > 0) {
-                    featuresContainer.innerHTML = '';
-                    car.features.forEach(feature => {
-                        const featureItem = document.createElement('div');
-                        featureItem.className = 'feature-item';
-                        featureItem.textContent = feature;
-                        featuresContainer.appendChild(featureItem);
-                    });
-                } else {
-                    featuresContainer.textContent = 'No features available';
-                }
-    
-                // Handle image
-                if (car.imageUrl) {
-                    const carImage = document.getElementById('carImage');
-                    const imagePlaceholder = document.getElementById('imagePlaceholder');
-                    carImage.src = car.imageUrl;
-                    carImage.style.display = 'block';
-                    imagePlaceholder.style.display = 'none';
-                }
-    
-                // Update status banner
-                document.getElementById('statusMessage').textContent = 'Loaded Successfully';
-                document.getElementById('statusCode').textContent = '✓';
-            })
-            .catch(error => {
-                console.error('Error retrieving car details:', error);
-                document.getElementById('statusMessage').textContent = 'Failed to load car';
-                document.getElementById('statusCode').textContent = '✗';
-            });
-    } else {
-        console.log('Car ID not found in URL');
-    }
+
+function handleView(car) {
+    const carId = car.id;
+    console.log('car object:', car);
+
+    // Redirect to car.html with the car ID in the URL
+    window.location.href = `cars.html?carId=${carId}`;
+}
+
+// Extract carId from the URL
+const urlParams = new URLSearchParams(window.location.search);
+const carId = urlParams.get('carId');
+
+if (carId) {
+    fetch(`${baseUrl}/get-car/${carId}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Car details:', data);
+
+            const car = data.entity;
+            console.log('Car object:', car);
+
+            // Update page title
+            document.title = `${car.make} ${car.model} | CarSoko`;
+            
+            // Populate car title and brief info
+            document.getElementById('carMake').textContent = car.make || 'N/A';
+            document.getElementById('carModel').textContent = car.model || 'N/A';
+            document.getElementById('carFuel').textContent = car.fuelType || 'N/A';
+            document.getElementById('carYear').textContent = car.year || 'N/A';
+            document.getElementById('carBodyType').textContent = car.bodyType || 'N/A';
+            document.getElementById('carDoors').textContent = car.doors ? `${car.doors} Doors` : 'N/A';
+            document.getElementById('carColor').textContent = car.color || 'N/A';
+            
+            // Format price (assuming Kenyan Shillings)
+            document.getElementById('carPrice').textContent = car.price 
+                ? `Kshs ${parseInt(car.price).toLocaleString()}` 
+                : 'Price on request';
+            
+            // Populate detail table
+            document.getElementById('detailMake').textContent = car.make || 'N/A';
+            document.getElementById('detailModel').textContent = car.model || 'N/A';
+            document.getElementById('detailColor').textContent = car.color || 'N/A';
+            document.getElementById('detailDriveType').textContent = car.driveType || 'N/A';
+            document.getElementById('detailTransmission').textContent = car.transmission || 'N/A';
+            document.getElementById('detailCondition').textContent = car.condition || 'N/A';
+            document.getElementById('detailYear').textContent = car.year || 'N/A';
+            document.getElementById('detailFuel').textContent = car.fuelType || 'N/A';
+            document.getElementById('detailEngine').textContent = car.engineSize || 'N/A';
+            document.getElementById('detailMileage').textContent = car.mileage ? `${car.mileage.toLocaleString()} km` : 'N/A';
+            document.getElementById('detailDoors').textContent = car.doors || 'N/A';
+            document.getElementById('detailStatus').textContent = car.status || '--';
+            document.getElementById('carVIN').textContent = car.vin || 'Unregistered';
+            document.getElementById('carId').textContent = car.id || 'N/A';
+            
+            // Car status badge
+            document.getElementById('carStatus').textContent = car.status || 'Available';
+            
+            // Description
+            document.getElementById('carDescription').textContent = car.description || 'No description available for this vehicle.';
+
+            // Handle features
+            const featuresContainer = document.getElementById('carFeatures');
+            if (car.features && car.features.length > 0) {
+                featuresContainer.innerHTML = '';
+                car.features.forEach(feature => {
+                    const featureItem = document.createElement('div');
+                    featureItem.className = 'feature-item';
+                    featureItem.textContent = feature;
+                    featuresContainer.appendChild(featureItem);
+                });
+            } else {
+                featuresContainer.innerHTML = '<div class="feature-item">No features available</div>';
+            }
+
+            // Handle image
+            // Function to display image from base64 data
+           // Corrected processing based on your new payload
+function displayCarImage(car) {
+  if (car.imageData) {
+      const carImage = document.getElementById('carImage');
+      const imagePlaceholder = document.getElementById('imagePlaceholder');
+
+      carImage.src = car.imageData;
+      carImage.style.display = 'block';
+      imagePlaceholder.style.display = 'none';
+      carImage.classList.remove('loading');
+
+      console.log('Displayed car image data:', car.imageData);
+  } else {
+      console.log('No image data found.');
+  }
+}
+
+function processCarImages(imagesData) {
+  if (imagesData && imagesData.length > 0) {
+      const firstImage = imagesData[0];
+      if (firstImage && firstImage.imageData) {
+          displayCarImage(firstImage);
+      } else {
+          console.log('First image has no imageData.');
+      }
+  } else {
+      console.log('No images found in payload.');
+  }
+}
+
+// Your full payload
+const carImagesPayload = {
+  "message": "Car retrieved successfully",
+  "statusCode": 200,
+  "entity": {
+      "id": 11,
+      "make": "BMW",
+      "model": "i6",
+      "year": "2020",
+      "price": "3400000",
+      "mileage": "1200",
+      "fuelType": "Hybrid",
+      "transmission": "Automatic",
+      "color": "Black",
+      "bodyType": "SUV",
+      "status": "Available",
+      "description": "The BMW i6 is a luxury all-electric sedan...",
+      "features": null,
+      "images": [
+          {
+              "id": 11,
+              "imageData": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/..." // your base64 data
+          }
+      ]
+  }
+};
+
+// Now access entity.images to process
+if (carImagesPayload && carImagesPayload.entity && carImagesPayload.entity.images) {
+  processCarImages(carImagesPayload.entity.images);
+}
+
+          
+
+            // Update status banner
+            document.getElementById('statusMessage').textContent = 'Car details loaded successfully';
+            document.getElementById('statusCode').textContent = '✓';
+            document.querySelector('.status-banner').classList.add('success');
+        })
+        .catch(error => {
+            console.error('Error retrieving car details:', error);
+            document.getElementById('statusMessage').textContent = 'Failed to load car details';
+            document.getElementById('statusCode').textContent = '✗';
+            document.querySelector('.status-banner').classList.add('error');
+        });
+} else {
+    console.log('Car ID not found in URL');
+    document.getElementById('statusMessage').textContent = 'No car ID provided';
+    document.getElementById('statusCode').textContent = '!';
+    document.querySelector('.status-banner').classList.add('warning');
+}
     
     
     
@@ -723,28 +824,61 @@ const CONFIG = {
         */
     }
 
+    function showPopupConfirmation(car, callback) {
+      const popup = document.createElement('div');
+      popup.className = 'popup-confirmation';
+      popup.innerHTML = `
+          <div class="popup-content">
+              <p>Are you sure you want to delete ${car.model} (${car.year})?</p>
+              <button id="popup-confirm-yes">Yes</button>
+              <button id="popup-confirm-no">No</button>
+          </div>
+      `;
+  
+      document.body.appendChild(popup);
+  
+      document.getElementById('popup-confirm-yes').addEventListener('click', () => {
+          callback(true);
+          popup.remove();
+      });
+  
+      document.getElementById('popup-confirm-no').addEventListener('click', () => {
+          callback(false);
+          popup.remove();
+      });
+  }
+  
+
+
     // DELETE Car
     function handleDelete(car) {
-        const carId = car.id; // Assuming car has an id
-        const confirmDelete = confirm(`Are you sure you want to delete ${car.model} (${car.year})?`);
-        if (confirmDelete) {
-            fetch(`${baseUrl}/delete/${carId}`, {
-                method: 'DELETE',
-            })
-            .then(response => {
-                if (response.ok) {
-                    alert('Car deleted successfully!');
-                    location.reload(); // Reload to refresh the table
-                } else {
-                    throw new Error('Delete failed');
-                }
-            })
-            .catch(error => {
-                console.error('Error deleting car:', error);
-                alert('Failed to delete car.');
-            });
-        }
-    }
+      showPopupConfirmation(car, (confirmDelete) => {
+          if (confirmDelete) {
+              fetch(`${baseUrl}/delete/${car.id}`, {
+                  method: 'DELETE',
+              })
+              .then(response => {
+                  if (response.ok) {
+                      showNotification('Car deleted successfully!', 'success');
+                      setTimeout(() => {
+                          location.reload(); // Reload after showing notification
+                      }, 1500); // Wait 1.5 seconds before reload
+                  } else {
+                      throw new Error('Delete failed');
+                  }
+              })
+              .catch(error => {
+                  console.error('Error deleting car:', error);
+                  showNotification('Failed to delete car.', 'error');
+              });
+          } else {
+              showNotification('Delete operation cancelled.', 'info');
+          }
+      });
+  }
+  
+  
+  
 });
 
   
@@ -897,6 +1031,46 @@ const CONFIG = {
     .preview-box {
       position: relative;
       margin: 5px;
+    }
+      .popup-confirmation {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 20px;
+        border-radius: 5px;
+        text-align: center;
+        z-index: 10000;
+        max-width: 300px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    }
+
+    .popup-content p {
+        margin-bottom: 20px;
+    }
+
+    .popup-content button {
+        margin: 5px;
+        padding: 10px 15px;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .popup-content button:hover {
+        background-color: #218838;
+    }
+
+    .popup-content #popup-confirm-no {
+        background-color: #dc3545;
+    }
+
+    .popup-content #popup-confirm-no:hover {
+        background-color: #c82333;
     }
   `;
   document.head.appendChild(style);
