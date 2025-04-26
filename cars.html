@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Details</title>
+    <link rel="stylesheet" href="Cars.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Car Details</h1>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="status-banner">
+            <span id="statusMessage">Loading...</span>
+            <span class="code" id="statusCode"></span>
+        </div>
+        
+        <div class="car-card">
+            <div class="car-image">
+                <div class="placeholder" id="imagePlaceholder">🚗</div>
+                <img id="carImage" style="display: none;" alt="Car Image">
+            </div>
+            
+            <div class="car-details">
+                <div class="car-title">
+                    <h2><span id="carMake">Loading...</span> <span id="carModel">Loading...</span></h2>
+                    <div class="car-price" id="carPrice">Loading...</div>
+                </div>
+                
+                <div class="details-grid">
+                    <div class="detail-item">
+                        <div class="label">Year</div>
+                        <div class="value" id="carYear">Loading...</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="label">Mileage</div>
+                        <div class="value" id="carMileage">Loading...</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="label">Fuel Type</div>
+                        <div class="value" id="carFuel">Loading...</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="label">Transmission</div>
+                        <div class="value" id="carTransmission">Loading...</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="label">Color</div>
+                        <div class="value" id="carColor">Loading...</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="label">Body Type</div>
+                        <div class="value" id="carBodyType">Loading...</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="label">ID</div>
+                        <div class="value" id="carId">Loading...</div>
+                    </div>
+                </div>
+                
+                <div class="description">
+                    <h3>Description <span class="badge" id="carStatus">Loading...</span></h3>
+                    <p id="carDescription">Loading...</p>
+                </div>
+                
+                <div class="features">
+                    <h3>Features</h3>
+                    <div id="carFeatures" class="features-placeholder">No features available</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>

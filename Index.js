@@ -503,6 +503,9 @@ const CONFIG = {
             if (data.entity && data.entity.length > 0) {
                 data.entity.forEach((car) => {
                     const row = document.createElement('tr');
+                    const idCell = document.createElement('td');
+                    idCell.textContent = car.id || (index + 1); // Prefer car.id, else use index
+                    row.appendChild(idCell);
 
                     // Image cell
                     const imgCell = document.createElement('td');
@@ -547,7 +550,7 @@ const CONFIG = {
                     // View button
                     const viewButton = document.createElement('button');
                     viewButton.className = 'btn btn-info btn-sm me-1';
-                    viewButton.textContent = 'View';
+                    viewButton.innerHTML = '<i class="fas fa-eye"></i>';  
                     viewButton.addEventListener('click', function() {
                         handleView(car);
                     });
@@ -555,7 +558,7 @@ const CONFIG = {
                     // Edit button
                     const editButton = document.createElement('button');
                     editButton.className = 'btn btn-warning btn-sm me-1';
-                    editButton.textContent = 'Edit';
+                    editButton.innerHTML = '<i class="fas fa-edit"></i>';
                     editButton.addEventListener('click', function() {
                         handleEdit(car);
                     });
@@ -563,7 +566,8 @@ const CONFIG = {
                     // Delete button
                     const deleteButton = document.createElement('button');
                     deleteButton.className = 'btn btn-danger btn-sm';
-                    deleteButton.textContent = 'Delete';
+                    deleteButton.innerHTML = '<i class="fas fa-trash"></i>';
+
                     deleteButton.addEventListener('click', function() {
                         handleDelete(car);
                     });
@@ -596,21 +600,97 @@ const CONFIG = {
             tableBody.appendChild(row);
         });
 
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                ${message}
+                <span class="notification-close" onclick="this.parentElement.remove()">×</span>
+            `;
+            document.body.appendChild(notification);
+        
+            // Auto remove after 3 seconds
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+        
+
     // VIEW Car
     function handleView(car) {
-        const carId = car.id; // Assuming car has an id
-        fetch(`${baseUrl}/view/${carId}`)
+        const carId = car.id;
+        console.log('car object:', car);
+    
+        // Redirect to car.html with the car ID in the URL
+        window.location.href = `cars.html?carId=${carId}`;
+    }
+    
+    // Extract carId from the URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const carId = urlParams.get('carId');
+    
+    if (carId) {
+        fetch(`${baseUrl}/get-car/${carId}`)
             .then(response => response.json())
             .then(data => {
                 console.log('Car details:', data);
-                alert(`Viewing: ${car.model} (${car.year})`);
-                // Optionally open a modal to display car details
+    
+                const car = data.entity;
+                console.log('Car object:', car);
+    
+                // Populate car details
+                document.getElementById('carMake').textContent = car.make || 'N/A';
+                document.getElementById('carModel').textContent = car.model || 'N/A';
+                document.getElementById('carYear').textContent = car.year || 'N/A';
+                document.getElementById('carPrice').textContent = car.price ? `$${car.price}` : 'N/A';
+                document.getElementById('carMileage').textContent = car.mileage ? `${car.mileage} km` : 'N/A';
+                document.getElementById('carFuel').textContent = car.fuelType || 'N/A';
+                document.getElementById('carTransmission').textContent = car.transmission || 'N/A';
+                document.getElementById('carColor').textContent = car.color || 'N/A';
+                document.getElementById('carBodyType').textContent = car.bodyType || 'N/A';
+                document.getElementById('carId').textContent = car.id || 'N/A';
+                document.getElementById('carStatus').textContent = car.status || 'N/A';
+                document.getElementById('carDescription').textContent = car.description || 'No description available';
+    
+                // Handle features
+                const featuresContainer = document.getElementById('carFeatures');
+                if (car.features && car.features.length > 0) {
+                    featuresContainer.innerHTML = '';
+                    car.features.forEach(feature => {
+                        const featureItem = document.createElement('div');
+                        featureItem.className = 'feature-item';
+                        featureItem.textContent = feature;
+                        featuresContainer.appendChild(featureItem);
+                    });
+                } else {
+                    featuresContainer.textContent = 'No features available';
+                }
+    
+                // Handle image
+                if (car.imageUrl) {
+                    const carImage = document.getElementById('carImage');
+                    const imagePlaceholder = document.getElementById('imagePlaceholder');
+                    carImage.src = car.imageUrl;
+                    carImage.style.display = 'block';
+                    imagePlaceholder.style.display = 'none';
+                }
+    
+                // Update status banner
+                document.getElementById('statusMessage').textContent = 'Loaded Successfully';
+                document.getElementById('statusCode').textContent = '✓';
             })
             .catch(error => {
-                console.error('Error viewing car:', error);
-                alert('Failed to view car details.');
+                console.error('Error retrieving car details:', error);
+                document.getElementById('statusMessage').textContent = 'Failed to load car';
+                document.getElementById('statusCode').textContent = '✗';
             });
+    } else {
+        console.log('Car ID not found in URL');
     }
+    
+    
+    
 
     // EDIT Car
     function handleEdit(car) {
@@ -666,6 +746,7 @@ const CONFIG = {
         }
     }
 });
+
   
   /**
    * Initialize everything when DOM content is loaded
