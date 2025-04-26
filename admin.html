@@ -86,9 +86,9 @@
                     <button class="btn btn-primary" id="saveCarBtn">Save Car</button>
                 </div>
 
-                <form id="addCarForm">
+                <form id="addCarForm" >
                     <!-- CSRF Token - Will be dynamically set -->
-                    <input type="hidden" name="csrf_token" id="csrfToken">
+                    <!-- <input type="hidden" name="csrf_token" id="csrfToken"> -->
 
                     <div class="form-grid">
                         <div class="form-group">
@@ -97,13 +97,13 @@
                                 <option value="">Select Make</option>
                             </select> -->
                             <input type="text" class="form-control" id="carMake" name="carMake"
-                                placeholder="Enter car make" required />
+                                placeholder="Enter car make" />
 
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="carModel">Model</label>
                             <input type="text" class="form-control" id="carModel" name="carModel"
-                                placeholder="e.g. Camry, Civic" required>
+                                placeholder="e.g. Camry, Civic" >
                         </div>
                     </div>
 
@@ -111,12 +111,12 @@
                         <div class="form-group">
                             <label class="form-label" for="carYear">Year</label>
                             <input type="number" class="form-control" id="carYear" name="carYear"
-                                placeholder="e.g. 2025" min="1900" max="2030" required>
+                                placeholder="e.g. 2025" min="1900" max="2030" >
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="carPrice">Price ($)</label>
                             <input type="number" class="form-control" id="carPrice" name="carPrice"
-                                placeholder="e.g. 25000" min="0" step="0.01" required>
+                                placeholder="e.g. 25000" min="0" step="0.01" >
                         </div>
                     </div>
 
@@ -133,7 +133,7 @@
                                  Will be populated dynamically 
                             </select> -->
                             <input type="text" class="form-control" id="carFuelType" name="carFuelType"
-                                placeholder="e.g. Petrol, Diesel, Electric">
+                                placeholder="e.g. Petrol, Diesel, Electric" required>
                         </div>
                     </div>
 
@@ -145,12 +145,12 @@
                                  Will be populated dynamically 
                             </select> -->
                             <input type="text" class="form-control" id="carTransmission" name="carTransmission"
-                                placeholder="e.g. Automatic, Manual">
+                                placeholder="e.g. Automatic, Manual" required>
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="carColor">Color</label>
                             <input type="text" class="form-control" id="carColor" name="carColor"
-                                placeholder="e.g. Black, White, Silver">
+                                placeholder="e.g. Black, White, Silver" required>
                         </div>
                     </div>
 
@@ -162,7 +162,7 @@
                                  Will be populated dynamically 
                             </select> -->
                             <input type="text" class="form-control" id="carBodyType" name="carBodyType"
-                                placeholder="e.g. Sedan, SUV, Hatchback">
+                                placeholder="e.g. Sedan, SUV, Hatchback" required>
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="carStatus">Status</label>
@@ -171,7 +171,7 @@
                                  Will be populated dynamically -->
                             </select> 
                             <input type="text" class="form-control" id="carStatus" name="carStatus"
-                                placeholder="e.g. Available, Sold, Pending">
+                                placeholder="e.g. Available, Sold, Pending" required>
                         </div>
                     </div>
 
@@ -185,10 +185,11 @@
                     <div class="form-group">
                         <label class="form-label">Features</label>
                         <div id="featuresContainer"
-                            style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px;">
+                             style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px;">
                             <!-- Will be populated dynamically -->
                         </div>
                     </div>
+                    
 
                     <div class="form-group">
                         <label class="form-label" id="carImagesLabel">Car Images</label>
@@ -227,7 +228,7 @@
                         <thead>
                             <tr>
                                 <th>Image</th>
-                                <th>Make/Model</th>
+                                <th>Model</th>
                                 <th>Year</th>
                                 <th>Price</th>
                                 <th>Status</th>

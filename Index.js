@@ -1,18 +1,17 @@
 /**
  * Auto Elite Admin Dashboard
- * Main JavaScript file for handling authentication, dashboard, and car management
+ * Main JavaScript file for handling authentication, form submission, and UI interactions
  */
 
 // Global Configuration
 const CONFIG = {
     API_BASE_URL: 'https://your-api-endpoint.com/api',
     LOCAL_API_URL: 'http://localhost:8080/api/v1',
+    CARS_API_URL: 'http://localhost:8080/api/v1/cars',
     REDIRECT_DELAY: 1500
   };
   
   // Global state variables
-  let uploadedFiles = [];
-  let salesChart;
   let sessionToken = localStorage.getItem('sessionToken') || null;
   let userData = JSON.parse(localStorage.getItem('userData')) || null;
   
@@ -21,13 +20,23 @@ const CONFIG = {
    * Handles login, session management, and authentication state
    */
   const AuthModule = (() => {
+    /**
+     * Checks if user is logged in, redirects to login page if not
+     */
     const checkLoginStatus = () => {
       const isLoggedIn = localStorage.getItem('autoEliteLoggedIn') || sessionStorage.getItem('autoEliteLoggedIn');
-      if (isLoggedIn === 'false') {
-        window.location.href = 'Login.html';
+      if (isLoggedIn === 'false' || !isLoggedIn) {
+        window.location.href = 'login.html';
       }
     };
   
+    /**
+     * Handles user login process
+     * @param {string} username - User's username
+     * @param {string} password - User's password
+     * @param {boolean} rememberMe - Whether to remember login in localStorage
+     * @returns {Object} Result object with success status and message
+     */
     const handleLogin = async (username, password, rememberMe = false) => {
       try {
         const response = await fetch(`${CONFIG.LOCAL_API_URL}/auth/login`, {
@@ -46,17 +55,36 @@ const CONFIG = {
           storage.setItem('autoEliteLoggedIn', 'true');
           storage.setItem('autoEliteUser', username);
           
-          // Return result for further handling
+          // Store token and user data if available
+          if (result.token) {
+            localStorage.setItem('sessionToken', result.token);
+            sessionToken = result.token;
+          }
+          
+          if (result.userData) {
+            localStorage.setItem('userData', JSON.stringify(result.userData));
+            userData = result.userData;
+          }
+          
           return { success: true, message: 'Login successful! Redirecting...' };
         } else {
-          return { success: false, message: result.message || 'Invalid username or password. Please try again.' };
+          return { 
+            success: false, 
+            message: result.message || 'Invalid username or password. Please try again.' 
+          };
         }
       } catch (error) {
         console.error('Login error:', error);
-        return { success: false, message: 'An error occurred. Please try again later.' };
+        return { 
+          success: false, 
+          message: 'An error occurred. Please try again later.' 
+        };
       }
     };
   
+    /**
+     * Logs out the user and clears all session data
+     */
     const logout = () => {
       localStorage.removeItem('autoEliteLoggedIn');
       sessionStorage.removeItem('autoEliteLoggedIn');
@@ -67,24 +95,36 @@ const CONFIG = {
       window.location.href = 'login.html';
     };
   
+    /**
+     * Checks if user is authenticated and updates UI accordingly
+     * @returns {boolean} Whether user is authenticated
+     */
     const checkAuthentication = () => {
-      if (!sessionToken) {
+      if (!sessionToken && !(localStorage.getItem('autoEliteLoggedIn') || sessionStorage.getItem('autoEliteLoggedIn'))) {
         window.location.href = 'login.html';
         return false;
       }
       
       // Update user info in header
       if (userData) {
-        const userNameElement = document.getElementById('username');
-        const userRoleElement = document.getElementById('userRole');
-        const userAvatarElement = document.getElementById('userAvatar');
-        
-        if (userNameElement) userNameElement.textContent = userData.name || 'Admin User';
-        if (userRoleElement) userRoleElement.textContent = userData.role || 'Administrator';
-        if (userAvatarElement && userData.avatar) userAvatarElement.src = userData.avatar;
+        updateUserInterface(userData);
       }
       
       return true;
+    };
+  
+    /**
+     * Updates UI elements with user data
+     * @param {Object} user - User data object
+     */
+    const updateUserInterface = (user) => {
+      const userNameElement = document.getElementById('username');
+      const userRoleElement = document.getElementById('userRole');
+      const userAvatarElement = document.getElementById('userAvatar');
+      
+      if (userNameElement) userNameElement.textContent = user.name || 'Admin User';
+      if (userRoleElement) userRoleElement.textContent = user.role || 'Administrator';
+      if (userAvatarElement && user.avatar) userAvatarElement.src = user.avatar;
     };
   
     return {
@@ -96,238 +136,290 @@ const CONFIG = {
   })();
   
   /**
-   * UI Utilities Module
-   * Handles common UI operations like loaders, alerts, and formatting
+   * Image Handler Module
+   * Manages image upload and preview functionality
    */
-  const UIUtils = (() => {
-    const showLoader = () => {
-      const loaderOverlay = document.getElementById('loaderOverlay');
-      if (loaderOverlay) {
-        loaderOverlay.style.display = 'flex';
-        loaderOverlay.style.opacity = '1';
-      }
+  const ImageHandlerModule = (() => {
+    /**
+     * Sets up image upload and preview functionality
+     */
+    const initialize = () => {
+      const addImageBox = document.getElementById('addImageBox');
+      const imageInput = document.getElementById('imageInput');
+      const imagePreview = document.getElementById('imagePreview');
+  
+      if (!addImageBox || !imageInput || !imagePreview) return;
+  
+      // When the '+' is clicked, open the file picker
+      addImageBox.addEventListener('click', () => {
+        imageInput.click();
+      });
+  
+      // When images are selected
+      imageInput.addEventListener('change', (event) => {
+        handleImageSelection(event, imagePreview, addImageBox);
+      });
     };
   
-    const hideLoader = () => {
-      const loaderOverlay = document.getElementById('loaderOverlay');
-      if (loaderOverlay) {
-        loaderOverlay.style.opacity = '0';
-        setTimeout(() => {
-          loaderOverlay.style.display = 'none';
-        }, 300);
-      }
-    };
+    /**
+     * Handles image selection and preview generation
+     * @param {Event} event - Change event from file input
+     * @param {HTMLElement} previewContainer - Container for image previews
+     * @param {HTMLElement} addButton - Button to add more images
+     */
+    const handleImageSelection = (event, previewContainer, addButton) => {
+      const files = event.target.files;
   
-    const showAlert = (message, type = 'success', element = null) => {
-      const alertElement = element || document.getElementById('alertMessage');
-      if (alertElement) {
-        alertElement.textContent = message;
-        alertElement.className = 'alert ' + type;
-        alertElement.style.display = 'block';
-  
-        // Auto-hide for status messages
-        if (!element) {
-          setTimeout(() => {
-            alertElement.style.display = 'none';
-          }, 5000);
+      if (files.length > 0) {
+        for (const file of files) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            const previewBox = createImagePreview(e.target.result);
+            previewContainer.insertBefore(previewBox, addButton);
+          };
+          reader.readAsDataURL(file);
         }
       }
     };
   
-    const showStatusMessage = (message, type = 'success') => {
-      const statusMessageArea = document.getElementById('statusMessageArea');
-      if (statusMessageArea) {
-        statusMessageArea.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
-        
-        // Auto-hide after 5 seconds
-        setTimeout(() => {
-          statusMessageArea.innerHTML = '';
-        }, 5000);
-      }
+    /**
+     * Creates an image preview element
+     * @param {string} imageSrc - Base64 image data
+     * @returns {HTMLElement} Image preview container
+     */
+    const createImagePreview = (imageSrc) => {
+      const img = document.createElement('img');
+      img.src = imageSrc;
+      img.classList.add('preview-image');
+      
+      const previewBox = document.createElement('div');
+      previewBox.classList.add('preview-box');
+      previewBox.appendChild(img);
+      
+      // Add remove button to preview box
+      const removeBtn = document.createElement('button');
+      removeBtn.innerHTML = '&times;';
+      removeBtn.classList.add('remove-image-btn');
+      removeBtn.addEventListener('click', () => previewBox.remove());
+      previewBox.appendChild(removeBtn);
+      
+      return previewBox;
     };
   
-    const formatCurrency = (amount) => {
-      return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'KES',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0
-      }).format(amount);
-    };
+    /**
+     * Converts input files to base64 strings
+     * @param {FileList} files - Files to convert
+     * @returns {Promise<string[]>} Promise resolving to array of base64 strings
+     */
+    const convertFilesToBase64 = (files) => {
+      const readers = [];
   
-    const getBadgeClass = (status) => {
-      switch(status.toLowerCase()) {
-        case 'available': return 'badge-success';
-        case 'reserved': return 'badge-warning';
-        case 'sold': return 'badge-danger';
-        case 'maintenance': return 'badge-warning';
-        default: return 'badge-secondary';
+      for (let i = 0; i < files.length; i++) {
+        readers.push(new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = e => resolve(e.target.result);
+          reader.onerror = e => reject(e);
+          reader.readAsDataURL(files[i]);
+        }));
       }
+  
+      return Promise.all(readers);
     };
   
     return {
-      showLoader,
-      hideLoader,
-      showAlert,
-      showStatusMessage,
-      formatCurrency,
-      getBadgeClass
+      initialize,
+      convertFilesToBase64
     };
   })();
   
   /**
-   * API Service Module
-   * Handles all API requests
+   * Car Management Module
+   * Handles car data creation and retrieval
    */
-  const APIService = (() => {
-    const request = async (endpoint, method = 'GET', data = null, includeFiles = false) => {
-      try {
-        const headers = {
-          'Authorization': `Bearer ${sessionToken}`
-        };
-        
-        let requestOptions = {
-          method,
-          headers
-        };
-        
-        if (data) {
-          if (includeFiles) {
-            // For multipart/form-data (file uploads)
-            const formData = new FormData();
-            
-            // Add all form fields to FormData
-            Object.keys(data).forEach(key => {
-              if (Array.isArray(data[key])) {
-                data[key].forEach(item => formData.append(`${key}[]`, item));
-              } else {
-                formData.append(key, data[key]);
-              }
-            });
-            
-            // Add files
-            uploadedFiles.forEach((file, index) => {
-              formData.append(`carImages[${index}]`, file);
-            });
-            
-            requestOptions.body = formData;
-            // Don't set Content-Type for FormData, browser will set it with boundary
-          } else {
-            // For JSON data
-            requestOptions.headers['Content-Type'] = 'application/json';
-            requestOptions.body = JSON.stringify(data);
-          }
-        }
-        
-        const response = await fetch(`${CONFIG.API_BASE_URL}${endpoint}`, requestOptions);
-        
-        // Handle HTTP errors
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || `HTTP error! Status: ${response.status}`);
-        }
-        
-        // Check for no-content responses
-        if (response.status === 204) {
-          return null;
-        }
-        
-        return await response.json();
-      } catch (error) {
-        console.error('API Request Error:', error);
-        throw error;
-      }
+  const CarModule = (() => {
+    /**
+     * Initializes the car form submission handler
+     */
+    const initializeCarForm = () => {
+      const addCarForm = document.getElementById("addCarForm");
+      const imageInput = document.getElementById("imageInput");
+      const saveCarBtn = document.getElementById("saveCarBtn");
+  
+      if (!addCarForm || !imageInput || !saveCarBtn) return;
+  
+      saveCarBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        addCarForm.requestSubmit();
+      });
+  
+      addCarForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        await handleCarFormSubmission(addCarForm, imageInput);
+      });
     };
   
-    const loadDashboardStats = async () => {
-      try {
-        const stats = await request('/dashboard/stats');
-        
-        const elements = {
-          totalCars: document.getElementById('totalCars'),
-          totalViews: document.getElementById('totalViews'),
-          pendingOrders: document.getElementById('pendingOrders'),
-          totalRevenue: document.getElementById('totalRevenue')
-        };
-        
-        if (elements.totalCars) elements.totalCars.textContent = stats.totalCars || '0';
-        if (elements.totalViews) elements.totalViews.textContent = stats.totalViews || '0';
-        if (elements.pendingOrders) elements.pendingOrders.textContent = stats.pendingOrders || '0';
-        if (elements.totalRevenue) elements.totalRevenue.textContent = UIUtils.formatCurrency(stats.totalRevenue || 0);
-      } catch (error) {
-        console.error('Failed to load dashboard stats:', error);
-        // Use fallback data
-        const fallbackStats = {
-          totalCars: '124',
-          totalViews: '8,567',
-          pendingOrders: '12',
-          totalRevenue: '$254,120'
-        };
-        
-        const elements = {
-          totalCars: document.getElementById('totalCars'),
-          totalViews: document.getElementById('totalViews'),
-          pendingOrders: document.getElementById('pendingOrders'),
-          totalRevenue: document.getElementById('totalRevenue')
-        };
-        
-        if (elements.totalCars) elements.totalCars.textContent = fallbackStats.totalCars;
-        if (elements.totalViews) elements.totalViews.textContent = fallbackStats.totalViews;
-        if (elements.pendingOrders) elements.pendingOrders.textContent = fallbackStats.pendingOrders;
-        if (elements.totalRevenue) elements.totalRevenue.textContent = fallbackStats.totalRevenue;
-      }
-    };
+    /**
+     * Handles car form submission
+     * @param {HTMLFormElement} form - The car form element
+     * @param {HTMLInputElement} imageInput - Image file input element
+     */
+    const handleCarFormSubmission = async (form, imageInput) => {
+      const formData = new FormData(form);
+      const files = imageInput.files;
   
-    const loadCarMakes = async () => {
+      if (files.length === 0) {
+        showNotification('Please select at least one image.', 'error');
+        return;
+      }
+  
       try {
-        const makes = await request('/car-makes');
-        const makeSelect = document.getElementById('carMake');
-        
-        if (makeSelect) {
-          // Clear existing options except the first one
-          makeSelect.innerHTML = '<option value="">Select Make</option>';
+        const loadingIndicator = document.createElement('div');
+        loadingIndicator.id = 'loadingIndicator';
+        loadingIndicator.innerHTML = 'Processing images...';
+        document.body.appendChild(loadingIndicator);
+  
+        // Convert images to base64
+        const base64Images = await ImageHandlerModule.convertFilesToBase64(files);
+        const getSelectedFeatures = () => {
+            const selected = [];
+            document.querySelectorAll('input[name="features[]"]:checked').forEach(checkbox => {
+              selected.push(checkbox.value);
+            });
+            return selected; // will return an array
+          };
           
-          // Add makes from API
-          makes.forEach(make => {
-            const option = document.createElement('option');
-            option.value = make.id;
-            option.textContent = make.name;
-            makeSelect.appendChild(option);
-          });
+          
+  
+        // Build payload
+        const payload = {
+          make: formData.get("carMake"),
+          model: formData.get("carModel"),
+          year: formData.get("carYear"),
+          price: formData.get("carPrice"),
+          mileage: formData.get("carMileage"),
+          fuelType: formData.get("carFuelType"),
+          transmission: formData.get("carTransmission"),
+          color: formData.get("carColor"),
+          features: getSelectedFeatures(),
+          bodyType: formData.get("carBodyType"),
+          status: formData.get("carStatus"),
+          description: formData.get("carDescription"),
+          images: base64Images
+        };
+        console.log('Payload:', payload);
+        console.log('Selected features:', getSelectedFeatures());
+        console.log("this is my form data ", formData);
+        console.log("this is my images", base64Images);
+  
+        // Send data to API
+        const response = await fetch(`${CONFIG.CARS_API_URL}/create`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": sessionToken ? `Bearer ${sessionToken}` : ''
+          },
+          body: JSON.stringify(payload)
+        });
+  
+        document.body.removeChild(loadingIndicator);
+  
+        if (response.ok) {
+          showNotification("Car added successfully!", "success");
+          form.reset();
+          // Clear image previews
+          const imagePreview = document.getElementById('imagePreview');
+          const addImageBox = document.getElementById('addImageBox');
+          if (imagePreview) {
+            while (imagePreview.firstChild && imagePreview.firstChild !== addImageBox) {
+              imagePreview.removeChild(imagePreview.firstChild);
+            }
+          }
+        } else {
+          const errorData = await response.json();
+          console.error(errorData);
+          showNotification("Failed to add car. Please try again.", "error");
         }
       } catch (error) {
-        console.error('Failed to load car makes:', error);
-        // Use fallback data
-        const fallbackMakes = ['Toyota', 'Honda', 'BMW', 'Mercedes', 'Audi', 'Ford', 'Chevrolet', 'Other'];
-        const makeSelect = document.getElementById('carMake');
-        
-        if (makeSelect) {
-          makeSelect.innerHTML = '<option value="">Select Make</option>';
-          fallbackMakes.forEach(make => {
-            const option = document.createElement('option');
-            option.value = make;
-            option.textContent = make;
-            makeSelect.appendChild(option);
-          });
-        }
+        console.error("Error:", error);
+        showNotification("Something went wrong. Please try again later.", "error");
       }
     };
-    
+  
+    /**
+     * Fetches and displays car features
+     */
+    document.addEventListener('DOMContentLoaded', () => {
+        const loadCarFeatures = async () => {
+          const featuresContainer = document.getElementById('featuresContainer');
+          if (!featuresContainer) {
+            console.error('No featuresContainer found');
+            return;
+          }
+      
+          try {
+            const response = await fetch(`${CONFIG.CARS_API_URL}/get-car-feature`);
+            if (!response.ok) throw new Error('Failed to fetch features');
+            
+            const data = await response.json();
+            const features = data.entity || []; // <-- THIS LINE FIXED
+            console.log('Fetched features:', features);
+      
+            featuresContainer.innerHTML = ''; // Clear container first
+      
+            features.forEach(feature => {
+              const label = document.createElement('label');
+              label.classList.add(
+                'flex', 'items-center', 'space-x-2', 
+                'bg-gray-100', 'border', 'border-gray-300', 
+                'p-4', 'rounded-md', 'cursor-pointer'
+              );
+      
+              const checkbox = document.createElement('input');
+              checkbox.type = 'checkbox';
+              checkbox.name = 'features[]';
+              checkbox.value = feature;
+      
+              const span = document.createElement('span');
+              span.textContent = feature;
+      
+              label.appendChild(checkbox);
+              label.appendChild(span);
+              featuresContainer.appendChild(label);
+            });
+          } catch (error) {
+            console.error('Error fetching features:', error);
+            featuresContainer.innerHTML = '<p class="text-red-500">Failed to load features</p>';
+          }
+        };
+      
+        loadCarFeatures();
+      });
+      
+      
+  
     return {
-      request,
-      loadDashboardStats,
-      loadCarMakes
+      initializeCarForm,
+      
     };
   })();
   
   /**
-   * Event Handlers Module
-   * Sets up event listeners for various UI elements
+   * UI Utilities Module
+   * Handles general UI interactions
    */
-  const EventHandlers = (() => {
-    // Login page event handlers
-    const setupLoginHandlers = () => {
-      const loginForm = document.getElementById('loginForm');
+  const UIModule = (() => {
+    /**
+     * Initializes UI event handlers
+     */
+    const initialize = () => {
+      initializePasswordToggle();
+      initializeLogoutButton();
+    };
+  
+    /**
+     * Sets up password visibility toggle
+     */
+    const initializePasswordToggle = () => {
       const togglePassword = document.getElementById('togglePassword');
       
       if (togglePassword) {
@@ -341,7 +433,255 @@ const CONFIG = {
           }
         });
       }
-      
+    };
+  
+    /**
+     * Sets up logout button handler
+     */
+    const initializeLogoutButton = () => {
+      const logoutBtn = document.getElementById('logoutBtn');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          AuthModule.logout();
+        });
+      }
+    };
+  
+    return {
+      initialize
+    };
+  })();
+  
+  /**
+   * Shows a notification message
+   * @param {string} message - Message to display
+   * @param {string} type - Message type ('success', 'error', 'info')
+   */
+  function showNotification(message, type = 'info') {
+    // Remove existing notification
+    const existingNotification = document.getElementById('notification');
+    if (existingNotification) {
+      existingNotification.remove();
+    }
+  
+    // Create new notification
+    const notification = document.createElement('div');
+    notification.id = 'notification';
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    
+    // Add close button
+    const closeBtn = document.createElement('span');
+    closeBtn.innerHTML = '&times;';
+    closeBtn.className = 'notification-close';
+    closeBtn.onclick = () => notification.remove();
+    notification.appendChild(closeBtn);
+    
+    // Add to document
+    document.body.appendChild(notification);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+      if (document.body.contains(notification)) {
+        notification.remove();
+      }
+    }, 5000);
+  }
+
+
+  // fetch car features from the API and display them in the table
+  document.addEventListener('DOMContentLoaded', function() {
+    const tableBody = document.getElementById('recentCarsTable');
+    const baseUrl = 'http://localhost:8080/api/v1/cars'; 
+
+    fetch(baseUrl + '/get-cars')
+        .then(response => response.json())
+        .then(data => {
+            tableBody.innerHTML = '';
+
+            if (data.entity && data.entity.length > 0) {
+                data.entity.forEach((car) => {
+                    const row = document.createElement('tr');
+
+                    // Image cell
+                    const imgCell = document.createElement('td');
+                    const img = document.createElement('img');
+                    if (car.images && car.images.length > 0) {
+                          car.images[0].imageData;
+                    }
+                    img.style.width = '100px';
+                    img.style.height = 'auto';
+                    img.alt = 'Car Image';
+                    imgCell.appendChild(img);
+                    row.appendChild(imgCell);
+
+                    // Model cell
+                    const modelCell = document.createElement('td');
+                    modelCell.textContent = car.model || '';
+                    row.appendChild(modelCell);
+
+                    // Year cell
+                    const yearCell = document.createElement('td');
+                    yearCell.textContent = car.year || '';
+                    row.appendChild(yearCell);
+
+                    // Price cell
+                    const priceCell = document.createElement('td');
+                    priceCell.textContent = car.price || '';
+                    row.appendChild(priceCell);
+
+                    // Status cell
+                    const statusCell = document.createElement('td');
+                    statusCell.textContent = car.status || '';
+                    row.appendChild(statusCell);
+
+                    // Added Date cell
+                    const addedDateCell = document.createElement('td');
+                    addedDateCell.textContent = new Date().toLocaleDateString();
+                    row.appendChild(addedDateCell);
+
+                    // Actions cell
+                    const actionsCell = document.createElement('td');
+
+                    // View button
+                    const viewButton = document.createElement('button');
+                    viewButton.className = 'btn btn-info btn-sm me-1';
+                    viewButton.textContent = 'View';
+                    viewButton.addEventListener('click', function() {
+                        handleView(car);
+                    });
+
+                    // Edit button
+                    const editButton = document.createElement('button');
+                    editButton.className = 'btn btn-warning btn-sm me-1';
+                    editButton.textContent = 'Edit';
+                    editButton.addEventListener('click', function() {
+                        handleEdit(car);
+                    });
+
+                    // Delete button
+                    const deleteButton = document.createElement('button');
+                    deleteButton.className = 'btn btn-danger btn-sm';
+                    deleteButton.textContent = 'Delete';
+                    deleteButton.addEventListener('click', function() {
+                        handleDelete(car);
+                    });
+
+                    actionsCell.appendChild(viewButton);
+                    actionsCell.appendChild(editButton);
+                    actionsCell.appendChild(deleteButton);
+                    row.appendChild(actionsCell);
+
+                    tableBody.appendChild(row);
+                });
+            } else {
+                const row = document.createElement('tr');
+                const cell = document.createElement('td');
+                cell.colSpan = 7;
+                cell.className = 'text-center';
+                cell.textContent = 'No cars found.';
+                row.appendChild(cell);
+                tableBody.appendChild(row);
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching cars:', error);
+            const row = document.createElement('tr');
+            const cell = document.createElement('td');
+            cell.colSpan = 7;
+            cell.className = 'text-center text-danger';
+            cell.textContent = 'Failed to load cars.';
+            row.appendChild(cell);
+            tableBody.appendChild(row);
+        });
+
+    // VIEW Car
+    function handleView(car) {
+        const carId = car.id; // Assuming car has an id
+        fetch(`${baseUrl}/view/${carId}`)
+            .then(response => response.json())
+            .then(data => {
+                console.log('Car details:', data);
+                alert(`Viewing: ${car.model} (${car.year})`);
+                // Optionally open a modal to display car details
+            })
+            .catch(error => {
+                console.error('Error viewing car:', error);
+                alert('Failed to view car details.');
+            });
+    }
+
+    // EDIT Car
+    function handleEdit(car) {
+        const carId = car.id; // Assuming car has an id
+        // For example: redirect to edit page
+        window.location.href = `/edit-car.html?id=${carId}`;
+        
+        // OR if you prefer direct API call for editing:
+        /*
+        fetch(`${baseUrl}/edit/${carId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                model: 'New Model',
+                price: 'New Price',
+                // other fields...
+            }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Car edited successfully:', data);
+            alert('Car edited successfully');
+        })
+        .catch(error => {
+            console.error('Error editing car:', error);
+            alert('Failed to edit car.');
+        });
+        */
+    }
+
+    // DELETE Car
+    function handleDelete(car) {
+        const carId = car.id; // Assuming car has an id
+        const confirmDelete = confirm(`Are you sure you want to delete ${car.model} (${car.year})?`);
+        if (confirmDelete) {
+            fetch(`${baseUrl}/delete/${carId}`, {
+                method: 'DELETE',
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('Car deleted successfully!');
+                    location.reload(); // Reload to refresh the table
+                } else {
+                    throw new Error('Delete failed');
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting car:', error);
+                alert('Failed to delete car.');
+            });
+        }
+    }
+});
+  
+  /**
+   * Initialize everything when DOM content is loaded
+   */
+  document.addEventListener('DOMContentLoaded', function() {
+    // Detect current page
+    const isLoginPage = document.getElementById('loginForm') !== null;
+    const isAdminPage = document.getElementById('adminDashboard') !== null;
+    const isCarFormPage = document.getElementById('addCarForm') !== null;
+    
+    // Initialize UI components
+    UIModule.initialize();
+    
+    // Initialize login form if on login page
+    if (isLoginPage) {
+      const loginForm = document.getElementById('loginForm');
       if (loginForm) {
         loginForm.addEventListener('submit', async function(event) {
           event.preventDefault();
@@ -355,222 +695,127 @@ const CONFIG = {
           const rememberMe = rememberCheckbox ? rememberCheckbox.checked : false;
           
           // Reset previous alert messages
-          UIUtils.showAlert('', 'alert', document.getElementById('alertMessage'));
+          const alertMessage = document.getElementById('alertMessage');
+          if (alertMessage) alertMessage.style.display = 'none';
           
           if (!username || !password) {
-            UIUtils.showAlert('Please enter both username and password.', 'error', document.getElementById('alertMessage'));
+            showNotification('Please enter both username and password.', 'error');
             return;
           }
           
           const result = await AuthModule.handleLogin(username, password, rememberMe);
           
           if (result.success) {
-            UIUtils.showAlert(result.message, 'success', document.getElementById('alertMessage'));
+            showNotification(result.message, 'success');
             
             // Redirect after short delay
             setTimeout(function() {
               window.location.href = 'admin.html';
             }, CONFIG.REDIRECT_DELAY);
           } else {
-            UIUtils.showAlert(result.message, 'error', document.getElementById('alertMessage'));
+            showNotification(result.message, 'error');
             if (passwordInput) passwordInput.value = '';
           }
         });
       }
-      
-      // Form input animation
-      const inputs = document.querySelectorAll('input');
-      inputs.forEach(input => {
-        input.addEventListener('focus', function() {
-          if (this.parentElement) {
-            this.parentElement.style.borderColor = '#2e77f2';
-          }
-        });
-  
-        input.addEventListener('blur', function() {
-          if (this.parentElement) {
-            this.parentElement.style.borderColor = '';
-          }
-        });
-      });
-    };
-  
-    // Admin page event handlers
-    const setupAdminHandlers = () => {
-      const logoutBtn = document.getElementById('logoutBtn');
-    //   const addCarForm = document.getElementById('addCarForm');
-      const fileUpload = document.getElementById('fileUpload');
-      const addImageBox = document.getElementById('addImageBox');
-      
-      if (logoutBtn) {
-        logoutBtn.addEventListener('click', (e) => {
-          e.preventDefault();
-          AuthModule.logout();
-        });
-      }
-      
-     
-      
-      if (addImageBox && fileUpload) {
-        addImageBox.addEventListener('click', () => {
-          fileUpload.click();
-        });
-        
-        fileUpload.addEventListener('change', (e) => {
-          // Image handling logic would go here
-          if (e.target.files.length > 0) {
-            UIUtils.showStatusMessage('Images uploaded!', 'success');
-          }
-        });
-      }
-    };
+    } 
+    // Check authentication for admin pages
+    else if (isAdminPage) {
+      AuthModule.checkAuthentication();
+    }
     
-    return {
-      setupLoginHandlers,
-      setupAdminHandlers
-    };
-  })();
-  
-  /**
-   * Initialize application based on current page
-   */
-  document.addEventListener('DOMContentLoaded', function() {
-    // Determine current page
-    const isLoginPage = document.getElementById('loginForm') !== null;
-    const isAdminPage = document.getElementById('adminDashboard') !== null;
+    // Initialize image handler
+    ImageHandlerModule.initialize();
     
-    if (isLoginPage) {
-      // Set up login page
-      AuthModule.checkLoginStatus();
-      EventHandlers.setupLoginHandlers();
-    } else if (isAdminPage) {
-      // Set up admin dashboard
-      if (AuthModule.checkAuthentication()) {
-        APIService.loadDashboardStats();
-        APIService.loadCarMakes();
-        EventHandlers.setupAdminHandlers();
+    // Initialize car form if on car form page
+    if (isCarFormPage) {
+      CarModule.initializeCarForm();
+    }
+    
+    // Load car features on pages that need them
+    if (document.getElementById('featuresContainer')) {
+      CarModule.loadCarFeatures();
+    }
+  });
+  
+  // Add CSS for notifications
+  const style = document.createElement('style');
+  style.textContent = `
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 15px 20px;
+      border-radius: 5px;
+      color: white;
+      max-width: 300px;
+      z-index: 9999;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      animation: slideIn 0.3s ease-out;
+    }
+    
+    .notification.success {
+      background-color: #28a745;
+    }
+    
+    .notification.error {
+      background-color: #dc3545;
+    }
+    
+    .notification.info {
+      background-color: #17a2b8;
+    }
+    
+    .notification-close {
+      margin-left: 10px;
+      cursor: pointer;
+      float: right;
+      font-weight: bold;
+    }
+    
+    #loadingIndicator {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 20px;
+      z-index: 9999;
+    }
+    
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
       }
     }
-    //add images from file upload
-    const addImageBox = document.getElementById('addImageBox');
-    const imageInput = document.getElementById('imageInput');
-    const imagePreview = document.getElementById('imagePreview');
-
-    // When the '+' is clicked, open the file picker
-    addImageBox.addEventListener('click', () => {
-        imageInput.click();
-    });
-
-    // When images are selected
-    imageInput.addEventListener('change', (event) => {
-        const files = event.target.files;
-
-        if (files.length > 0) {
-            for (const file of files) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const img = document.createElement('img');
-                    img.src = e.target.result;
-                    img.classList.add('preview-image'); // Style as needed
-                    const previewBox = document.createElement('div');
-                    previewBox.classList.add('preview-box');
-                    previewBox.appendChild(img);
-                    imagePreview.insertBefore(previewBox, addImageBox);
-                }
-                reader.readAsDataURL(file);
-            }
-        }
-    });
-
-// add car to the database
-
-document.addEventListener("DOMContentLoaded", function () {
-    const addCarForm = document.getElementById("addCarForm");
-    const imageInput = document.getElementById("imageInput");
-    const saveCarBtn = document.getElementById("saveCarBtn");
-
-    saveCarBtn.addEventListener("click", function (e) {
-        e.preventDefault();
-        addCarForm.requestSubmit();
-    });
-
-    addCarForm.addEventListener("submit", function (e) {
-        e.preventDefault();
-
-        const formData = new FormData(addCarForm); // You can still use FormData to quickly gather other fields
-
-        const imagesArray = [];
-        const files = imageInput.files;
-
-        if (files.length > 0) {
-            const readers = [];
-
-            for (let i = 0; i < files.length; i++) {
-                readers.push(new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = function (e) {
-                        resolve(e.target.result); // Base64 string
-                    };
-                    reader.onerror = function (e) {
-                        reject(e);
-                    };
-                    reader.readAsDataURL(files[i]);
-                }));
-            }
-
-            // Wait until all images are converted
-            Promise.all(readers)
-                .then(base64Images => {
-                    // Now all images are base64 strings
-                    const payload = {
-                        make: formData.get("carMake"),
-                        model: formData.get("carModel"),
-                        year: formData.get("carYear"),
-                        price: formData.get("carPrice"),
-                        mileage: formData.get("carMileage"),
-                        fuelType: formData.get("carFuelType"),
-                        transmission: formData.get("carTransmission"),
-                        color: formData.get("carColor"),
-                        bodyType: formData.get("carBodyType"),
-                        status: formData.get("carStatus"),
-                        description: formData.get("carDescription"),
-                        images: base64Images // <--- this is a list of strings
-                    };
-                    console.log(payload); // For debugging
-                    console.log(formData)
-
-                    // Send JSON (not FormData anymore)
-                    fetch("/api/cars", { // <-- Your Spring Boot endpoint
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify(payload)
-                    })
-                    .then(response => {
-                        if (response.ok) {
-                            alert("Car added successfully!");
-                            addCarForm.reset();
-                        } else {
-                            return response.json().then(errorData => {
-                                console.error(errorData);
-                                alert("Failed to add car. Please try again.");
-                            });
-                        }
-                    })
-                    .catch(error => {
-                        console.error("Error:", error);
-                        alert("Something went wrong. Please try again later.");
-                    });
-                })
-                .catch(error => {
-                    console.error("Error reading files:", error);
-                    alert("Failed to read images. Please try again.");
-                });
-        } else {
-            alert("Please select at least one image.");
-        }
-    });
-});
-});
-
+    
+    .remove-image-btn {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: rgba(255,0,0,0.7);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      line-height: 18px;
+      cursor: pointer;
+    }
+    
+    .preview-box {
+      position: relative;
+      margin: 5px;
+    }
+  `;
+  document.head.appendChild(style);
