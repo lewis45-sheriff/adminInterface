@@ -213,16 +213,21 @@ const CONFIG = {
      */
     const convertFilesToBase64 = (files) => {
       const readers = [];
-  
+    
       for (let i = 0; i < files.length; i++) {
         readers.push(new Promise((resolve, reject) => {
           const reader = new FileReader();
-          reader.onload = e => resolve(e.target.result);
+          reader.onload = e => {
+            // Return an object instead of just the base64 string
+            resolve({
+              base64Data: e.target.result
+            });
+          };
           reader.onerror = e => reject(e);
           reader.readAsDataURL(files[i]);
         }));
       }
-  
+    
       return Promise.all(readers);
     };
   
@@ -694,82 +699,137 @@ if (carId) {
 
             // Handle features
             const featuresContainer = document.getElementById('carFeatures');
-            if (car.features && car.features.length > 0) {
-                featuresContainer.innerHTML = '';
-                car.features.forEach(feature => {
-                    const featureItem = document.createElement('div');
-                    featureItem.className = 'feature-item';
-                    featureItem.textContent = feature;
-                    featuresContainer.appendChild(featureItem);
-                });
-            } else {
-                featuresContainer.innerHTML = '<div class="feature-item">No features available</div>';
-            }
+if (car.features && car.features.length > 0) {
+    featuresContainer.innerHTML = '';
+    car.features.forEach(feature => {
+        const featureItem = document.createElement('div');
+        featureItem.className = 'feature-item';
+        featureItem.textContent = feature.featureName; // <-- fixed here
+        featuresContainer.appendChild(featureItem);
+    });
+} else {
+    featuresContainer.innerHTML = '<div class="feature-item">No features available</div>';
+}
+console.log('Car features:', car.features);
+            
 
             // Handle image
             // Function to display image from base64 data
-           // Corrected processing based on your new payload
-function displayCarImage(car) {
-  if (car.imageData) {
-      const carImage = document.getElementById('carImage');
-      const imagePlaceholder = document.getElementById('imagePlaceholder');
-
-      carImage.src = car.imageData;
-      carImage.style.display = 'block';
-      imagePlaceholder.style.display = 'none';
-      carImage.classList.remove('loading');
-
-      console.log('Displayed car image data:', car.imageData);
-  } else {
-      console.log('No image data found.');
-  }
-}
-
-function processCarImages(imagesData) {
-  if (imagesData && imagesData.length > 0) {
-      const firstImage = imagesData[0];
-      if (firstImage && firstImage.imageData) {
-          displayCarImage(firstImage);
-      } else {
-          console.log('First image has no imageData.');
-      }
-  } else {
-      console.log('No images found in payload.');
-  }
-}
-
-// Your full payload
-const carImagesPayload = {
-  "message": "Car retrieved successfully",
-  "statusCode": 200,
-  "entity": {
-      "id": 11,
-      "make": "BMW",
-      "model": "i6",
-      "year": "2020",
-      "price": "3400000",
-      "mileage": "1200",
-      "fuelType": "Hybrid",
-      "transmission": "Automatic",
-      "color": "Black",
-      "bodyType": "SUV",
-      "status": "Available",
-      "description": "The BMW i6 is a luxury all-electric sedan...",
-      "features": null,
-      "images": [
-          {
-              "id": 11,
-              "imageData": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/..." // your base64 data
-          }
-      ]
-  }
-};
-
-// Now access entity.images to process
-if (carImagesPayload && carImagesPayload.entity && carImagesPayload.entity.images) {
-  processCarImages(carImagesPayload.entity.images);
-}
-
+            function displayCarImages(imagesArray) {
+              const carGallery = document.querySelector('.car-gallery');
+              const imagePlaceholder = document.getElementById('imagePlaceholder');
+              
+              // Clear previous images except the placeholder
+              const existingImages = carGallery.querySelectorAll('img:not(#carImage)');
+              existingImages.forEach(img => img.remove());
+              
+              // Hide original image element
+              const originalImage = document.getElementById('carImage');
+              originalImage.style.display = 'none';
+              
+              if (imagesArray.length === 0) {
+                console.log('No images to display');
+                imagePlaceholder.style.display = 'flex'; // Show placeholder
+                return;
+              }
+              
+              // Hide placeholder
+              imagePlaceholder.style.display = 'none';
+              
+              // Create thumbnail container if it doesn't exist
+              let thumbnailContainer = carGallery.querySelector('.car-thumbnails');
+              if (!thumbnailContainer) {
+                thumbnailContainer = document.createElement('div');
+                thumbnailContainer.className = 'car-thumbnails';
+                carGallery.appendChild(thumbnailContainer);
+              } else {
+                thumbnailContainer.innerHTML = ''; // Clear existing thumbnails
+              }
+              
+              // Create main image display
+              const mainImageDisplay = document.createElement('div');
+              mainImageDisplay.className = 'car-main-image';
+              
+              const mainImage = document.createElement('img');
+              mainImage.src = imagesArray[0].imageData; // First image as default
+              mainImage.alt = 'Car Main Image';
+              mainImage.className = 'main-car-image';
+              
+              mainImageDisplay.appendChild(mainImage);
+              
+              // Insert main image at the beginning
+              if (carGallery.firstChild) {
+                carGallery.insertBefore(mainImageDisplay, carGallery.firstChild);
+              } else {
+                carGallery.appendChild(mainImageDisplay);
+              }
+              
+              // Create thumbnails
+              imagesArray.forEach((image, index) => {
+                if (image.imageData) {
+                  const thumbnail = document.createElement('div');
+                  thumbnail.className = 'car-thumbnail';
+                  if (index === 0) {
+                    thumbnail.className += ' active'; // Mark first thumbnail as active
+                  }
+                  
+                  const thumbImg = document.createElement('img');
+                  thumbImg.src = image.imageData;
+                  thumbImg.alt = `Car Image ${index + 1}`;
+                  thumbImg.dataset.imageId = image.id;
+                  
+                  // Click event to switch main image
+                  thumbnail.addEventListener('click', () => {
+                    mainImage.src = image.imageData;
+                    
+                    // Update active thumbnail
+                    document.querySelectorAll('.car-thumbnail').forEach(thumb => {
+                      thumb.classList.remove('active');
+                    });
+                    thumbnail.classList.add('active');
+                  });
+                  
+                  thumbnail.appendChild(thumbImg);
+                  thumbnailContainer.appendChild(thumbnail);
+                }
+              });
+              
+              console.log(`Displayed ${imagesArray.length} car images`);
+            }
+            
+            // Function to fetch and process images
+            function fetchCarImages(carId) {
+              fetch(`http://localhost:8080/api/v1/cars/${carId}/images`)
+                .then(response => response.json())
+                .then(data => {
+                  if (data.statusCode === 200 && data.entity && data.entity.images) {
+                    displayCarImages(data.entity.images);
+                  } else {
+                    console.log('Invalid response format or no images array');
+                    // Show placeholder if no images
+                    document.getElementById('imagePlaceholder').style.display = 'flex';
+                  }
+                })
+                .catch(error => {
+                  console.error('Error fetching car images:', error);
+                  // Show placeholder on error
+                  document.getElementById('imagePlaceholder').style.display = 'flex';
+                });
+            }
+            
+            // Process images from already received response
+            function processCarImagesResponse(response) {
+              if (response.statusCode === 200 && 
+                  response.entity && 
+                  response.entity.images) {
+                displayCarImages(response.entity.images);
+              } else {
+                console.log('Invalid response format or no images array');
+                // Show placeholder if no images
+                document.getElementById('imagePlaceholder').style.display = 'flex';
+              }
+            }
+            fetchCarImages(carId);
           
 
             // Update status banner

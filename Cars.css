@@ -398,3 +398,62 @@ nav a:hover {
         transform: translateX(100%);
     }
 }
+/* Styles for the car gallery */
+.car-gallery {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+  }
+  
+  .car-main-image {
+    width: 100%;
+    height: 300px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  .main-car-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .car-thumbnails {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 5px 0;
+  }
+  
+  .car-thumbnail {
+    width: 80px;
+    height: 60px;
+    border-radius: 4px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s ease;
+  }
+  
+  .car-thumbnail.active {
+    border-color: #4a90e2;
+  }
+  
+  .car-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 300px;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+    font-size: 2rem;
+    color: #888;
+  }
