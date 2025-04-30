@@ -1012,6 +1012,28 @@ console.log('Car features:', car.features);
       CarModule.loadCarFeatures();
     }
   });
+
+
+  //rendering car count
+  async function fetchCarCount() {
+    try {
+        const response = await fetch('http://localhost:8080/api/v1/cars/get-car-count'); // Replace with your actual endpoint
+        const data = await response.json();
+
+        if (response.ok && data.statusCode === 200) {
+            document.getElementById('totalCars').textContent = data.entity;
+        } else {
+            document.getElementById('totalCars').textContent = 'Error';
+            console.error('Failed to fetch car count:', data.message);
+        }
+    } catch (error) {
+        document.getElementById('totalCars').textContent = 'Error';
+        console.error('Error fetching car count:', error);
+    }
+}
+
+// Call function on page load
+window.addEventListener('DOMContentLoaded', fetchCarCount);
   
   // Add CSS for notifications
   const style = document.createElement('style');

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 836.47 592.37">
+  <defs>
+    <style>
+      .cls-1 {
+        letter-spacing: 0em;
+      }
+
+      .cls-2 {
+        fill: #821a1c;
+        font-size: 42.44px;
+      }
+
+      .cls-2, .cls-3 {
+        font-family: Benzin-ExtraBold, Benzin-ExtraBold;
+      }
+
+      .cls-2, .cls-3, .cls-4 {
+        font-weight: 700;
+      }
+
+      .cls-5 {
+        letter-spacing: 0em;
+      }
+
+      .cls-6 {
+        letter-spacing: -.02em;
+      }
+
+      .cls-7 {
+        fill-rule: evenodd;
+      }
+
+      .cls-7, .cls-3 {
+        fill: #231f20;
+      }
+
+      .cls-3 {
+        font-size: 48.44px;
+      }
+
+      .cls-8 {
+        letter-spacing: 0em;
+      }
+
+      .cls-4 {
+        fill: #821a1d;
+        font-family: Gilroy-BoldItalic, Gilroy-BoldItalic;
+        font-size: 16.21px;
+        font-style: italic;
+      }
+
+      .cls-9 {
+        letter-spacing: -.03em;
+      }
+    </style>
+  </defs>
+  <path class="cls-7" d="m43.13,18.24c124.89-23.38,118.33-24.52,180.34-2.03-58.6-20.73-74.15-13.18-129.74-.91-4.73,1.04-7.51,2.39-1.47,2.43l56.85.4c-35.16,2.05-69.22,2.77-106,.1h0Zm158.65-4.45l1.53,3.8c-.38-5.49,8.57-3.5,14.3-1.64-4.24-2.83-17.2-5.57-15.83-2.16h0ZM58.97,33.5c-11.12,0-20.84,5.98-26.12,14.91,6.31-6.74,15.67-11.01,26.12-11.01s19.81,4.27,26.12,11.01c-5.28-8.92-15-14.91-26.12-14.91h0Zm215.81,0c-11.12,0-20.84,5.98-26.12,14.91,6.31-6.74,15.67-11.01,26.12-11.01s19.81,4.27,26.12,11.01c-5.28-8.92-15-14.91-26.12-14.91h0ZM27.25,19.15c-13.17-2.15-11.07,10.19-15.3,26.31,4.11-10.96,5.31-25.23,14.77-23.54C118.69,38.34,278.97.73,312.11,44.24c-12.03-21.52-48.78-26.27-94.37-25.94-4.24,2.14-11.79,5.03-13.81.24-57.7,1.49-126.26,8.82-176.67.6Z"/>
+  <text class="cls-3" transform="translate(0 86.62)"><tspan x="0" y="0">PROCLAN</tspan></text>
+  <text class="cls-2" transform="translate(37.59 124.32)"><tspan x="0" y="0">MOTORS</tspan></text>
+  <text class="cls-4" transform="translate(103.44 154.56)"><tspan x="0" y="0">sh</tspan><tspan class="cls-9" x="16.94" y="0">o</tspan><tspan x="26.06" y="0">w </tspan><tspan class="cls-6" x="42.72" y="0">y</tspan><tspan x="50.91" y="0">our </tspan><tspan class="cls-5" x="79.69" y="0">c</tspan><tspan class="cls-1" x="88.32" y="0">l</tspan><tspan class="cls-8" x="92.34" y="0">a</tspan><tspan class="cls-9" x="102.43" y="0">s</tspan><tspan x="109.55" y="0">s</tspan></text>
+</svg>
